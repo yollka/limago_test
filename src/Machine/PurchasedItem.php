@@ -68,12 +68,11 @@ class PurchasedItem implements PurchasedItemInterface
      */
     public function getChange()
     {
-        $change = $this->purchasedAmount - $this->getTotalAmount();
+        $change = (float) bcsub($this->purchasedAmount, $this->getTotalAmount(), 2);
 
         $result = [];
 
         while ($this->compare($change, 0) > 0) {
-
             $nominal = $this->getAvailableNominal($change);
 
             $cnt = $this->getPossibleCountByNominal($nominal, $change);
