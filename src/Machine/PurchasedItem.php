@@ -97,8 +97,6 @@ class PurchasedItem implements PurchasedItemInterface
                 return $value;
             }
         }
-
-        die;
     }
 
     /**
