@@ -49,14 +49,20 @@ class PurchaseCigarettesCommand extends Command
                 )
             );
 
-            $output->writeln('Your change is:');
 
-            $table = new Table($output);
-            $table
-                ->setHeaders(['Coins', 'Count'])
-                ->setRows($purchasedItem->getChange())
-            ;
-            $table->render();
+            $output->writeln(
+                count($purchasedItem->getChange()) ? 'Your change is:' : 'You don\'t need a change'
+            );
+
+            if (count($purchasedItem->getChange())) {
+                $table = new Table($output);
+                $table
+                    ->setHeaders(['Coins', 'Count'])
+                    ->setRows($purchasedItem->getChange())
+                ;
+                $table->render();
+            }
+
         } else {
             $output->writeln(
                 sprintf('You can\'t buy <info>%d</info> packs of cigarettes.', $itemCount)
