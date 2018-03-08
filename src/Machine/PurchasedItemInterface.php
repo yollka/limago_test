@@ -3,13 +3,12 @@
 namespace App\Machine;
 
 /**
- * Interface PurchasedItemInterface
- * @package App\Machine
+ * Interface PurchasedItemInterface.
  */
 interface PurchasedItemInterface
 {
     /**
-     * @return integer
+     * @return int
      */
     public function getItemQuantity();
 

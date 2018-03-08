@@ -2,6 +2,8 @@
 
 namespace App\Command;
 
+use App\Machine\CigaretteMachine;
+use App\Machine\PurchaseTransaction;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,12 +21,12 @@ class PurchaseCigarettesCommand extends Command
      */
     protected function configure()
     {
-        $this->addArgument('packs', InputArgument::REQUIRED, "How many packs do you want to buy?");
-        $this->addArgument('amount', InputArgument::REQUIRED, "The amount in euro.");
+        $this->addArgument('packs', InputArgument::REQUIRED, 'How many packs do you want to buy?');
+        $this->addArgument('amount', InputArgument::REQUIRED, 'The amount in euro.');
     }
 
     /**
-     * @param InputInterface   $input
+     * @param InputInterface $input
      * @param OutputInterface $output
      *
      * @return int|null|void
@@ -34,23 +36,36 @@ class PurchaseCigarettesCommand extends Command
         $itemCount = (int) $input->getArgument('packs');
         $amount = (float) \str_replace(',', '.', $input->getArgument('amount'));
 
+        $cigaretteMachine = new CigaretteMachine();
+        $purchasedItem = $cigaretteMachine->execute(new PurchaseTransaction($itemCount, $amount));
 
-        // $cigaretteMachine = new CigaretteMachine();
-        // ...
+        $output->writeln(
+            sprintf(
+                'You bought <info>%d</info> packs of cigarettes for <info>%s</info>, each for <info>%s</info>.',
+                $purchasedItem->getItemQuantity(),
+                $this->formatNumber($purchasedItem->getTotalAmount()),
+                $this->formatNumber($purchasedItem->getTotalAmount() / $purchasedItem->getItemQuantity())
+            )
+        );
 
-        $output->writeln('You bought <info>...</info> packs of cigarettes for <info>...</info>, each for <info>...</info>. ');
-        $output->writeln('Your change is:');
+        if ($purchasedItem->getItemQuantity() > 0) {
+            $output->writeln('Your change is:');
 
-        $table = new Table($output);
-        $table
-            ->setHeaders(array('Coins', 'Count'))
-            ->setRows(array(
-                // ...
-                array('0.02', '0'),
-                array('0.01', '0'),
-            ))
-        ;
-        $table->render();
+            $table = new Table($output);
+            $table
+                ->setHeaders(['Coins', 'Count'])
+                ->setRows($purchasedItem->getChange())
+            ;
+            $table->render();
+        }
+    }
 
+    /**
+     * @param float $number
+     * @return string
+     */
+    private function formatNumber(float $number)
+    {
+        return number_format($number, 2);
     }
 }
