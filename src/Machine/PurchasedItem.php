@@ -7,7 +7,18 @@ namespace App\Machine;
  */
 class PurchasedItem implements PurchasedItemInterface
 {
-    const ONE_CENT = 0.01;
+    /**
+     * @var float[]
+     */
+    private $availableChange = [
+        'one_euro' => 1.00,
+        'fifty_cent' => 0.50,
+        'twenty_cent' => 0.10,
+        'ten_cent' => 0.10,
+        'five_cent' => 0.05,
+        'two_cent ' => 0.02,
+        'one_cent' => 0.01,
+    ];
 
     /**
      * @var int
@@ -59,18 +70,61 @@ class PurchasedItem implements PurchasedItemInterface
     {
         $change = $this->purchasedAmount - $this->getTotalAmount();
 
-        return [
-            $this->getCalculatedChange($change, self::ONE_CENT),
-        ];
+        $result = [];
+
+        while ($this->compare($change, 0) > 0) {
+
+            $nominal = $this->getAvailableNominal($change);
+
+            $cnt = $this->getPossibleCountByNominal($nominal, $change);
+
+            $result[] = [$nominal, $cnt];
+
+            $change -= $cnt * $nominal;
+        }
+
+        return $result;
     }
 
     /**
      * @param float $change
-     * @param float $coin
-     * @return array
+     * @return float
      */
-    private function getCalculatedChange(float $change, float $coin)
+    private function getAvailableNominal(float $change)
     {
-        return [$coin, $change / $coin];
+        foreach ($this->availableChange as $value) {
+            if ($this->compare($value, $change) <= 0) {
+                return $value;
+            }
+        }
+
+        die;
+    }
+
+    /**
+     * @param float $nominal
+     * @param float $change
+     * @return int
+     */
+    private function getPossibleCountByNominal(float $nominal, float $change)
+    {
+        $cnt = 0;
+
+        while ($this->compare($change - $nominal, 0) >= 0) {
+            $cnt++;
+            $change -= $nominal;
+        }
+
+        return $cnt;
+    }
+
+    /**
+     * @param float $left
+     * @param float $right
+     * @return int
+     */
+    private function compare(float $left, float $right)
+    {
+        return bccomp($left, $right, 2);
     }
 }

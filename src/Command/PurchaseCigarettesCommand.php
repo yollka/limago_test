@@ -33,22 +33,22 @@ class PurchaseCigarettesCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $itemCount = (int) $input->getArgument('packs');
-        $amount = (float) \str_replace(',', '.', $input->getArgument('amount'));
+        $itemCount = (int)$input->getArgument('packs');
+        $amount = (float)\str_replace(',', '.', $input->getArgument('amount'));
 
         $cigaretteMachine = new CigaretteMachine();
         $purchasedItem = $cigaretteMachine->execute(new PurchaseTransaction($itemCount, $amount));
 
-        $output->writeln(
-            sprintf(
-                'You bought <info>%d</info> packs of cigarettes for <info>%s</info>, each for <info>%s</info>.',
-                $purchasedItem->getItemQuantity(),
-                $this->formatNumber($purchasedItem->getTotalAmount()),
-                $this->formatNumber($purchasedItem->getTotalAmount() / $purchasedItem->getItemQuantity())
-            )
-        );
-
         if ($purchasedItem->getItemQuantity() > 0) {
+            $output->writeln(
+                sprintf(
+                    'You bought <info>%d</info> packs of cigarettes for <info>%s</info>, each for <info>%s</info>.',
+                    $purchasedItem->getItemQuantity(),
+                    $this->formatNumber($purchasedItem->getTotalAmount()),
+                    $this->formatNumber($purchasedItem->getTotalAmount() / $purchasedItem->getItemQuantity())
+                )
+            );
+
             $output->writeln('Your change is:');
 
             $table = new Table($output);
@@ -57,6 +57,10 @@ class PurchaseCigarettesCommand extends Command
                 ->setRows($purchasedItem->getChange())
             ;
             $table->render();
+        } else {
+            $output->writeln(
+                sprintf('You can\'t buy <info>%d</info> packs of cigarettes.', $itemCount)
+            );
         }
     }
 
